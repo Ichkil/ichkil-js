@@ -4,7 +4,7 @@
 > no GPU, no tokenizer, no server). One call, fully offline after the first run.
 
 [![CI](https://github.com/Ichkil/ichkil-js/actions/workflows/ci.yml/badge.svg)](https://github.com/Ichkil/ichkil-js/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/ichkil.svg)](https://www.npmjs.com/package/ichkil)
+[![npm](https://img.shields.io/npm/v/ichkil)](https://www.npmjs.com/package/ichkil)
 [![npm - Node.js version](https://img.shields.io/badge/node-%3E%3D18-blue.svg)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Hugging Face model](https://img.shields.io/badge/%F0%9F%A4%97_model-ichkil%2Fichkil-yellow)](https://huggingface.co/ichkil/ichkil)
