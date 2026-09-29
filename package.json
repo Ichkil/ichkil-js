@@ -1,0 +1,70 @@
+{
+  "name": "ichkil",
+  "version": "1.0.0",
+  "description": "Arabic Tashkeel (diacritization) — a tiny, self-contained ONNX model with a clean JavaScript/TypeScript API",
+  "keywords": [
+    "arabic",
+    "tashkeel",
+    "diacritization",
+    "diacritics",
+    "harakat",
+    "nlp",
+    "onnx",
+    "onnxruntime",
+    "cpu",
+    "lightweight"
+  ],
+  "license": "MIT",
+  "author": "Maaouia BenHamed",
+  "homepage": "https://github.com/Ichkil/ichkil-js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ichkil/ichkil-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ichkil/ichkil-js/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "ichkil": "./bin/ichkil.mjs"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:unit": "vitest run test/pipeline.test.ts",
+    "test:integration": "vitest run test/diacritizer.test.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run build && npm run test"
+  },
+  "dependencies": {
+    "onnxruntime-node": "1.19.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@types/node": "^22.15.0",
+    "eslint": "^9.30.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.35.0",
+    "vitest": "^3.2.0"
+  }
+}
