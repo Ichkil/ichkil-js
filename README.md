@@ -174,4 +174,4 @@ Then tag and push: `git tag v1.0.1 && git push origin v1.0.1`.
 
 ## License
 
-[MIT](LICENSE) © 2026 Maaouia BenHamed
+MIT — [LICENSE](LICENSE) · [github.com/Ichkil/ichkil-js](https://github.com/Ichkil/ichkil-js) · © 2026 Maaouia BenHamed
