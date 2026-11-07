@@ -3,4 +3,4 @@
  *
  * Kept in sync with `version` in package.json (bump both when releasing).
  */
-export const version = "1.0.0";
+export const version = "1.1.0";

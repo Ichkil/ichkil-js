@@ -35,7 +35,7 @@ import type { Config } from "./diacritizer.js";
 export const DEFAULT_REPO_ID = "ichkil/ichkil";
 
 /** Default branch / tag / commit to fetch. */
-export const DEFAULT_REVISION = "main";
+export const DEFAULT_REVISION = "v0.3.0"; // pinned model release (see CHANGELOG)
 
 /** Base URL of the Hugging Face Hub (overridable for tests / mirrors). */
 export const HF_BASE_URL = "https://huggingface.co";
@@ -52,7 +52,7 @@ export interface ModelBundle {
 export interface ResolveOptions {
   /** Hugging Face model repository (default `ichkil/ichkil`). */
   repoId?: string;
-  /** Branch, tag or commit to fetch (default `main`). */
+  /** Branch, tag or commit to fetch (default `v0.3.0`). */
   revision?: string;
   /** Cache directory (default: `ICHKIL_CACHE_DIR` or `~/.cache/ichkil`). */
   cacheDir?: string;

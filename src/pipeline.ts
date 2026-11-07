@@ -3,9 +3,10 @@
  *
  * The model emits exactly one label per input character:
  *
- *     0        non-letter token (space / punctuation) or padding
+ *     0        non-letter token (space / punctuation / digit / Latin) or padding
  *     1        letter carries no diacritic
- *     2 .. 12  the eleven harakat / shadda / tanwin combinations
+ *     2 .. 15  the harakat / shadda / tanwin combinations
+ *              (13..15 = shadda + tanwin, added in model v0.3)
  *
  * This module is the single source of truth shared by inference and the
  * tests, and it mirrors the reference implementation in the core repository
@@ -14,7 +15,7 @@
  */
 
 /** A single Arabic letter (the characters the model may decorate). */
-export const AR_LETTER_RE = /[\u0621-\u064A]/;
+export const AR_LETTER_RE = /[\u0621-\u063A\u0641-\u064A]/;
 
 /** Any Arabic diacritic / harakat code point (stripped from input first). */
 export const AR_DIACRITIC_RE = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
@@ -28,10 +29,10 @@ export const LABEL_NON_LETTER = 0;
 /** Label id for a letter that carries no diacritic. */
 export const LABEL_NONE = 1;
 
-/** Number of labels emitted by the model (13). */
-export const NUM_LABELS = 13;
+/** Number of labels emitted by the model (16). */
+export const NUM_LABELS = 16;
 
-/** Label id -> canonical diacritic combination (13 labels; 0/1 attach nothing). */
+/** Label id -> canonical diacritic combination (16 labels; 0/1 attach nothing). */
 export const LABEL_TO_COMBO: readonly string[] = [
   "", // 0  non-letter token
   "", // 1  letter carries no diacritic
@@ -46,6 +47,9 @@ export const LABEL_TO_COMBO: readonly string[] = [
   "\u064B", // 10 tanwin fatha
   "\u064C", // 11 tanwin damma
   "\u064D", // 12 tanwin kasra
+  "\u0651\u064B", // 13 shadda + tanwin fatha
+  "\u0651\u064C", // 14 shadda + tanwin damma
+  "\u0651\u064D", // 15 shadda + tanwin kasra
 ];
 
 const comboEntries: [string, number][] = [];
@@ -58,7 +62,7 @@ for (let i = 0; i < LABEL_TO_COMBO.length; i++) {
 export const COMBO_TO_LABEL: Readonly<Record<string, number>> =
   Object.freeze(Object.fromEntries(comboEntries));
 
-/** Return `true` if `ch` is a single Arabic letter (U+0621..U+064A). */
+/** Return `true` if `ch` is an Arabic letter (U+0621..U+063A, U+0641..U+064A). */
 export function isArabicLetter(ch: string): boolean {
   return ch.length === 1 && AR_LETTER_RE.test(ch);
 }
@@ -76,14 +80,35 @@ export function comboToLabel(combo: string): number {
   return COMBO_TO_LABEL[combo] ?? LABEL_NON_LETTER;
 }
 
+const CHAR_MAP: Readonly<Record<string, string>> = {
+  "\u0671": "\u0627", // alef wasla -> alef
+  "\u06CC": "\u064A", // farsi yeh -> yeh
+  "\u06A9": "\u0643", // keheh -> kaf
+  "\u06C1": "\u0647", // heh goal -> heh
+  "\u00A0": " ", // no-break space
+};
+
 /**
- * Return `text` with all diacritics and tatweel removed.
+ * Canonical form used by the model (mirror of the core `normalize_text`):
+ * Unicode NFC, presentation variants mapped to base Arabic letters,
+ * zero-width characters removed, whitespace runs collapsed, trimmed.
+ * Diacritics are kept (see `stripDiacritics`).
+ */
+export function normalizeText(text: string): string {
+  let s = String(text).normalize("NFC");
+  s = Array.from(s, (c) => CHAR_MAP[c] ?? c).join("");
+  s = s.replace(/[\u200B-\u200F\uFEFF]/g, "");
+  return s.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Normalize `text`, then remove all diacritics and tatweel.
  *
  * Letters, spaces and punctuation are preserved so the result stays aligned
- * with the original character positions.
+ * with the characters the model sees.
  */
 export function stripDiacritics(text: string): string {
-  return String(text).replace(AR_DIACRITIC_RE, "").split(TATWEEL).join("");
+  return normalizeText(text).replace(AR_DIACRITIC_RE, "").split(TATWEEL).join("");
 }
 
 /** Map each character to its vocabulary id (out-of-vocabulary -> `unkId`). */

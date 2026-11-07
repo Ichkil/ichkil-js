@@ -14,13 +14,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 
 import { afterAll, describe, expect, it } from "vitest";
 
 import golden from "./golden.json";
 import { Diacritizer } from "../src/diacritizer.js";
-import { resolveModel, sha256OfFile, DEFAULT_REPO_ID } from "../src/download.js";
+import { resolveModel, sha256OfFile, DEFAULT_REPO_ID, DEFAULT_REVISION } from "../src/download.js";
 
 const VECTORS = golden.vectors as ReadonlyArray<{
   id: string;
@@ -34,18 +34,18 @@ function findLocalModel(): string | undefined {
   if (envDir && existsSync(join(envDir, "model.onnx"))) {
     return join(envDir, "model.onnx");
   }
-  const hubRoot = join(
+  // Reuse the HF cache only for the pinned revision (refs/<revision> -> snapshot);
+  // other cached revisions (e.g. the 13-label v0.1.0) must not be picked up.
+  const repoDir = join(
     process.env.HF_HOME ?? join(process.env.HOME ?? tmpdir(), ".cache", "huggingface"),
     "hub",
-    "models--ichkil--ichkil",
-    "snapshots"
+    "models--ichkil--ichkil"
   );
-  if (existsSync(hubRoot)) {
-    for (const entry of readdirSync(hubRoot, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const model = join(hubRoot, entry.name, "model.onnx");
-      if (existsSync(model)) return model;
-    }
+  const ref = join(repoDir, "refs", DEFAULT_REVISION);
+  if (existsSync(ref)) {
+    const commit = readFileSync(ref, "utf8").trim();
+    const model = join(repoDir, "snapshots", commit, "model.onnx");
+    if (existsSync(model)) return model;
   }
   return undefined;
 }
@@ -72,7 +72,7 @@ afterAll(async () => {
 });
 
 describe("Diacritizer (ONNX model)", () => {
-  it("predicts the golden labels for all 29 vectors", async () => {
+  it("predicts the golden labels for all golden vectors", async () => {
     const d = await getDiacritizer();
     console.log(`model source: ${source}`);
     for (const v of VECTORS) {
@@ -81,7 +81,7 @@ describe("Diacritizer (ONNX model)", () => {
     }
   });
 
-  it("produces the expected vocalized text for all 29 vectors", async () => {
+  it("produces the expected vocalized text for all golden vectors", async () => {
     const d = await getDiacritizer();
     for (const v of VECTORS) {
       const out = await d.diacritize(v.input);
@@ -110,7 +110,7 @@ describe("Diacritizer (ONNX model)", () => {
 
   it("exposes model metadata from config.json", async () => {
     const d = await getDiacritizer();
-    expect(d.numLabels).toBe(13);
+    expect(d.numLabels).toBe(16);
     expect(d.maxSeqLen).toBeGreaterThanOrEqual(1024);
   });
 });
@@ -123,7 +123,7 @@ describe("resolveModel (fresh cache + checksum verification)", () => {
       try {
         const bundle = await resolveModel({ cacheDir: dir });
         expect(existsSync(bundle.onnxPath)).toBe(true);
-        expect(bundle.config.num_tags).toBe(13);
+        expect(bundle.config.num_tags).toBe(16);
 
         const expected =
           typeof bundle.config.sha256 === "string"

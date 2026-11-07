@@ -35,7 +35,7 @@ import { InferenceError, ModelLoadError } from "./errors.js";
 export interface Config {
   /** Character -> vocabulary id mapping (includes `<pad>`/`<unk>`). */
   sym2id: Record<string, number>;
-  /** Number of labels (13). */
+  /** Number of labels (16). */
   num_tags: number;
   /** Maximum supported sequence length (1024). */
   max_seq_len?: number;
@@ -59,7 +59,7 @@ export class Diacritizer {
   readonly repoId: string;
   /** Revision (branch / tag / commit) of the loaded model. */
   readonly revision: string;
-  /** Number of labels (13). */
+  /** Number of labels (16). */
   readonly numLabels: number;
   /** Maximum supported sequence length (0 = unknown). */
   readonly maxSeqLen: number;
@@ -138,7 +138,7 @@ export class Diacritizer {
   }
 
   /**
-   * Predicted label id (0..12) for every character of `text`.
+   * Predicted label id (0..15) for every character of `text`.
    *
    * The input is stripped of diacritics and tatweel first, so the returned
    * array is aligned with the stripped characters.

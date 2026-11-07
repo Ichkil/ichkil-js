@@ -10,7 +10,7 @@
  * // -> 'مُحَمَّدٌ قَرَأَ الْكِتَابَ'
  * ```
  *
- * The first call downloads the ≈5 MB ONNX model from Hugging Face
+ * The first call downloads the ≈22 MB ONNX model from Hugging Face
  * (`ichkil/ichkil`), verifies its SHA-256 and caches it under
  * `~/.cache/ichkil`; afterwards everything is offline.
  */
@@ -32,6 +32,7 @@ export {
   isArabicLetter,
   labelToCombo,
   comboToLabel,
+  normalizeText,
   stripDiacritics,
   encode,
   argmax,
@@ -79,7 +80,7 @@ function getDefault(): Promise<Diacritizer> {
 /**
  * Vocalize bare (or already vocalized) Arabic text.
  *
- * The first call downloads the model from Hugging Face (≈5 MB), verifies its
+ * The first call downloads the model from Hugging Face (≈22 MB), verifies its
  * SHA-256 and caches it under `~/.cache/ichkil`; every later call is offline.
  * Concurrent calls share the same model creation.
  *
@@ -92,7 +93,7 @@ export async function diacritize(text: string): Promise<string> {
 }
 
 /**
- * Predicted label id (0..12) for every character of `text`, aligned with the
+ * Predicted label id (0..15) for every character of `text`, aligned with the
  * diacritic-stripped input. See {@link Diacritizer.predictLabels}.
  */
 export async function predictLabels(text: string): Promise<number[]> {

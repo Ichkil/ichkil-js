@@ -1,7 +1,7 @@
 /**
  * Pure pipeline tests — no model, no network.
  *
- * Covers the 13-label contract, the text helpers, and the cross-runtime
+ * Covers the 16-label contract, the text helpers, and the cross-runtime
  * golden vectors (a verbatim copy of the core repository's
  * `golden/vectors.json`): for every vector, `attach(input, labels)` MUST
  * reproduce `expected_text`.
@@ -32,9 +32,9 @@ const VECTORS = golden.vectors as ReadonlyArray<{
 }>;
 
 describe("label contract", () => {
-  it("has exactly 13 labels", () => {
-    expect(NUM_LABELS).toBe(13);
-    expect(LABEL_TO_COMBO).toHaveLength(13);
+  it("has exactly 16 labels", () => {
+    expect(NUM_LABELS).toBe(16);
+    expect(LABEL_TO_COMBO).toHaveLength(16);
   });
 
   it("maps label ids to the right diacritic combinations", () => {
@@ -51,11 +51,14 @@ describe("label contract", () => {
     expect(labelToCombo(10)).toBe("\u064b"); // tanwin fatha
     expect(labelToCombo(11)).toBe("\u064c"); // tanwin damma
     expect(labelToCombo(12)).toBe("\u064d"); // tanwin kasra
+    expect(labelToCombo(13)).toBe("\u0651\u064b"); // shadda + tanwin fatha
+    expect(labelToCombo(14)).toBe("\u0651\u064c"); // shadda + tanwin damma
+    expect(labelToCombo(15)).toBe("\u0651\u064d"); // shadda + tanwin kasra
   });
 
   it("returns '' for out-of-range or non-integer labels", () => {
     expect(labelToCombo(-1)).toBe("");
-    expect(labelToCombo(13)).toBe("");
+    expect(labelToCombo(16)).toBe("");
     expect(labelToCombo(99)).toBe("");
     expect(labelToCombo(2.5)).toBe("");
     expect(labelToCombo(NaN)).toBe("");
@@ -139,7 +142,7 @@ describe("argmax", () => {
 });
 
 describe("decode", () => {
-  it("attaches diacritics from flat 13-slot logits", () => {
+  it("attaches diacritics from flat 16-slot logits", () => {
     const n = NUM_LABELS;
     const logits = new Float32Array(n * 3); // "محب" — 3 letters
     logits[0 * n + 2] = 1.0; // م -> fatha
@@ -172,8 +175,8 @@ describe("attach", () => {
 });
 
 describe("golden vectors (cross-runtime contract)", () => {
-  it("ships 29 vectors", () => {
-    expect(VECTORS).toHaveLength(29);
+  it("ships 37 vectors", () => {
+    expect(VECTORS).toHaveLength(37);
   });
 
   it("attach(input, labels) === expected_text for every vector", () => {
@@ -182,7 +185,7 @@ describe("golden vectors (cross-runtime contract)", () => {
     }
   });
 
-  it("labels are within the 13-label contract", () => {
+  it("labels are within the 16-label contract", () => {
     for (const v of VECTORS) {
       expect(v.labels).toHaveLength(v.input.length);
       for (const label of v.labels) {
